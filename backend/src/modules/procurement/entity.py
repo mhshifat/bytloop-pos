@@ -63,7 +63,39 @@ class PurchaseOrder(Base):
         DateTime(timezone=True), server_default=func.now(), init=False
     )
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    promise_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+
+
+class ProductSupplier(Base):
+    """Preferred suppliers + purchasing metadata per product."""
+
+    __tablename__ = "product_suppliers"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "product_id", "supplier_id", name="uq_product_suppliers"),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid(), init=False
+    )
+    tenant_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), index=True
+    )
+    product_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"), index=True
+    )
+    supplier_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("suppliers.id", ondelete="RESTRICT"), index=True
+    )
+    is_preferred: Mapped[bool] = mapped_column(default=False)
+    unit_cost_cents: Mapped[int] = mapped_column(default=0)
+    lead_time_days: Mapped[int] = mapped_column(default=7)
+    lead_time_std_days: Mapped[int] = mapped_column(default=2)
+    min_order_qty: Mapped[int] = mapped_column(default=1)
+    pack_size: Mapped[int] = mapped_column(default=1)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), init=False
+    )
 
 
 class PurchaseOrderItem(Base):

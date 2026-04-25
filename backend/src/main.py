@@ -31,6 +31,7 @@ from src.modules.ai.age_vision_router import router as ai_age_vision_router
 from src.modules.ai.jewelry_vision_router import router as ai_jewelry_vision_router
 from src.modules.ai.planogram_router import router as ai_planogram_router
 from src.modules.ai.cafeteria_vision_router import router as ai_cafeteria_vision_router
+from src.modules.ai.supply_chain_router import router as ai_supply_chain_router
 from src.modules.audit.router import router as audit_router
 from src.modules.catalog.router import categories_router, router as catalog_router
 from src.modules.customers.router import router as customers_router
@@ -45,6 +46,9 @@ from src.modules.inventory.router import (
 from src.modules.procurement.router import (
     purchase_orders_router,
     suppliers_router,
+)
+from src.modules.procurement.product_suppliers_router import (
+    router as product_suppliers_router,
 )
 from src.modules.reporting.router import router as reporting_router
 from src.modules.sales.router import router as sales_router
@@ -202,6 +206,7 @@ def create_app() -> FastAPI:
     app.include_router(locations_router)
     app.include_router(suppliers_router)
     app.include_router(purchase_orders_router)
+    app.include_router(product_suppliers_router)
     app.include_router(customers_router)
     app.include_router(discounts_router)
     app.include_router(tax_router)
@@ -222,6 +227,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_jewelry_vision_router)
     app.include_router(ai_planogram_router)
     app.include_router(ai_cafeteria_vision_router)
+    app.include_router(ai_supply_chain_router)
     app.include_router(campaign_touches_router)
     app.include_router(audit_router)
     app.include_router(plugins_router)
