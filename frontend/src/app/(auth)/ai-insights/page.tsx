@@ -38,6 +38,9 @@ export default function AiInsightsPage() {
             <Button asChild variant="outline" size="sm">
               <Link href="/ai-insights/ops">Operations AI →</Link>
             </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/ai-insights/risk">Fraud & risk →</Link>
+            </Button>
           </div>
         </div>
       </header>
