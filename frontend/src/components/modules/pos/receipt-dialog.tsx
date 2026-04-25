@@ -1,12 +1,16 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { useQuery } from "@tanstack/react-query";
 import { Printer } from "lucide-react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@/components/shared/ui/button";
+import { getBrand } from "@/lib/api/tenant";
 import { printReceipt, type Receipt } from "@/lib/print/escpos";
 import type { OrderRead } from "@/lib/api/sales";
+import { translateText } from "@/lib/api/translate";
 import { formatMoney } from "@/lib/utils/money";
 
 type ReceiptDialogProps = {
@@ -15,7 +19,7 @@ type ReceiptDialogProps = {
   readonly onOpenChange: (open: boolean) => void;
 };
 
-function buildReceipt(order: OrderRead): Receipt {
+function buildReceipt(order: OrderRead, opts?: { readonly header?: string[]; readonly footer?: string[] }): Receipt {
   const money = (cents: number): string => formatMoney(cents, order.currency);
   const lines = order.items.map((i) => {
     const v = i.verticalData ?? {};
@@ -39,16 +43,31 @@ function buildReceipt(order: OrderRead): Receipt {
     totals.push({ left: "Change due", right: money(order.changeDueCents) });
   }
   return {
-    header: ["Bytloop POS", `Receipt #${order.number}`],
+    header: opts?.header ?? ["Bytloop POS", `Receipt #${order.number}`],
     lines,
     totals,
-    footer: ["Thank you!"],
+    footer: opts?.footer ?? ["Thank you!"],
   };
 }
 
-async function handlePrint(order: OrderRead): Promise<void> {
+async function maybeTranslateLines(lines: string[], locale: string): Promise<string[]> {
+  const targetLocale = locale.toLowerCase();
+  if (targetLocale === "en" || targetLocale.startsWith("en-")) return lines;
+  return Promise.all(
+    lines.map(async (t) => {
+      const res = await translateText({ sourceText: t, targetLocale });
+      return res.translatedText;
+    }),
+  );
+}
+
+async function handlePrint(order: OrderRead, locale: string, tenantHeader?: string | null, tenantFooter?: string | null): Promise<void> {
   try {
-    await printReceipt(buildReceipt(order));
+    const header = tenantHeader
+      ? await maybeTranslateLines([tenantHeader, `Receipt #${order.number}`], locale)
+      : await maybeTranslateLines(["Bytloop POS", `Receipt #${order.number}`], locale);
+    const footer = tenantFooter ? await maybeTranslateLines([tenantFooter], locale) : await maybeTranslateLines(["Thank you!"], locale);
+    await printReceipt(buildReceipt(order, { header, footer }));
   } catch (err) {
     console.error(err);
     toast.error("Couldn't reach the printer. Falling back to browser print.");
@@ -57,6 +76,8 @@ async function handlePrint(order: OrderRead): Promise<void> {
 }
 
 export function ReceiptDialog({ order, open, onOpenChange }: ReceiptDialogProps) {
+  const locale = useLocale();
+  const { data: brand } = useQuery({ queryKey: ["tenant", "brand"], queryFn: () => getBrand() });
   return (
     <Dialog.Root open={open && order !== null} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -102,7 +123,12 @@ export function ReceiptDialog({ order, open, onOpenChange }: ReceiptDialogProps)
               </div>
 
               <div className="mt-6 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => handlePrint(order)}>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    handlePrint(order, locale, brand?.receiptHeader ?? null, brand?.receiptFooter ?? null)
+                  }
+                >
                   <Printer size={14} /> Print
                 </Button>
                 <Button onClick={() => onOpenChange(false)}>Done</Button>

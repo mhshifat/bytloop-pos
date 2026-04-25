@@ -20,6 +20,8 @@ import { VerticalProfile, verticalProfileLabel } from "@/lib/enums/vertical-prof
 import { posStoreModeTagline } from "@/lib/verticals/pos-store-mode";
 import { toast } from "sonner";
 
+import { PosAssistantDialog } from "@/components/modules/ai/pos-assistant-dialog";
+
 import { CartPanel } from "./cart-panel";
 import { CheckoutFooter } from "./checkout-footer";
 import { GroceryWeighDialog } from "./grocery-weigh-dialog";
@@ -229,7 +231,10 @@ export function PosTerminal() {
       <aside className="flex min-h-0 flex-col rounded-lg border border-border bg-surface">
         <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <h2 className="text-sm font-semibold">Current sale</h2>
-          <ShiftIndicator />
+          <div className="flex items-center gap-2">
+            <PosAssistantDialog />
+            <ShiftIndicator />
+          </div>
         </header>
         <CartPanel verticalProfile={profile} />
         <CheckoutFooter checkoutButtonRef={checkoutButtonRef} />

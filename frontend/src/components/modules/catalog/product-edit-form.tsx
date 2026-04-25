@@ -17,7 +17,7 @@ import { FieldErrorText } from "@/components/shared/ui/field-error";
 import { Input } from "@/components/shared/ui/input";
 import { Label } from "@/components/shared/ui/label";
 import { Textarea } from "@/components/shared/ui/textarea";
-import { deleteProduct, getProduct, updateProduct } from "@/lib/api/catalog";
+import { deleteProduct, generateProductDescription, getProduct, updateProduct } from "@/lib/api/catalog";
 import type { ApiError } from "@/lib/api/error";
 import { isApiError } from "@/lib/api/error";
 import { type ProductCreateForm, productCreateSchema } from "@/schemas/catalog";
@@ -41,6 +41,7 @@ export function ProductEditForm({ productId }: ProductEditFormProps) {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<ProductCreateForm>({
     resolver: zodResolver(productCreateSchema),
@@ -95,6 +96,17 @@ export function ProductEditForm({ productId }: ProductEditFormProps) {
     },
   });
 
+  const genDesc = useMutation({
+    mutationFn: () => generateProductDescription(productId),
+    onError: (err) => {
+      if (isApiError(err)) setServerError(err);
+    },
+    onSuccess: (res) => {
+      setValue("description", res.description, { shouldDirty: true });
+      toast.success(res.cached ? "Description loaded from cache." : "Description generated.");
+    },
+  });
+
   if (isLoading) return <SkeletonCard />;
   if (error && isApiError(error)) return <InlineError error={error} />;
   if (!data) return null;
@@ -127,7 +139,18 @@ export function ProductEditForm({ productId }: ProductEditFormProps) {
       </div>
 
       <div className="space-y-1.5 md:col-span-2">
-        <Label htmlFor="description">Description</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="description">Description</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => genDesc.mutate()}
+            disabled={genDesc.isPending}
+          >
+            {genDesc.isPending ? "Generating…" : "Generate with AI"}
+          </Button>
+        </div>
         <Textarea id="description" rows={3} {...register("description")} />
         <FieldErrorText error={errors.description} />
       </div>

@@ -21,6 +21,9 @@ from src.core.idempotency import IdempotencyMiddleware
 from src.core.logging import configure_logging
 from src.core.real_ip import RealIpMiddleware
 from src.modules.ai.router import router as ai_reports_router
+from src.modules.ai.assistant_router import router as ai_assistant_router
+from src.modules.ai.catalog_router import router as ai_catalog_router
+from src.modules.ai.translate_router import router as ai_translate_router
 from src.modules.ai.touch_router import router as campaign_touches_router
 from src.modules.audit.router import router as audit_router
 from src.modules.catalog.router import categories_router, router as catalog_router
@@ -198,6 +201,9 @@ def create_app() -> FastAPI:
     app.include_router(sales_router)
     app.include_router(reporting_router)
     app.include_router(ai_reports_router)
+    app.include_router(ai_assistant_router)
+    app.include_router(ai_catalog_router)
+    app.include_router(ai_translate_router)
     app.include_router(campaign_touches_router)
     app.include_router(audit_router)
     app.include_router(plugins_router)

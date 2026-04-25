@@ -17,6 +17,7 @@ import { Textarea } from "@/components/shared/ui/textarea";
 import { createProduct } from "@/lib/api/catalog";
 import type { ApiError } from "@/lib/api/error";
 import { isApiError } from "@/lib/api/error";
+import { TranscriptProductDraftDialog } from "@/components/modules/catalog/transcript-product-draft-dialog";
 import { type ProductCreateForm, productCreateSchema } from "@/schemas/catalog";
 
 export function ProductCreateForm() {
@@ -28,6 +29,7 @@ export function ProductCreateForm() {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProductCreateForm>({
     resolver: zodResolver(productCreateSchema),
@@ -72,7 +74,10 @@ export function ProductCreateForm() {
       </div>
 
       <div className="space-y-1.5 md:col-span-2">
-        <Label htmlFor="name">Name</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="name">Name</Label>
+          <TranscriptProductDraftDialog setValue={setValue} />
+        </div>
         <Input id="name" {...register("name")} />
         <FieldErrorText error={errors.name} />
       </div>

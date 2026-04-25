@@ -91,6 +91,17 @@ export async function deleteProduct(productId: string): Promise<void> {
   return apiFetch<void>(`/products/${productId}`, { method: "DELETE" });
 }
 
+export async function generateProductDescription(productId: string): Promise<{
+  readonly productId: string;
+  readonly description: string;
+  readonly cached: boolean;
+}> {
+  return apiFetch<{ readonly productId: string; readonly description: string; readonly cached: boolean }>(
+    `/ai/catalog/products/${productId}/generate-description`,
+    { method: "POST", json: {} },
+  );
+}
+
 export type InventoryLevel = {
   readonly id: string;
   readonly productId: string;
