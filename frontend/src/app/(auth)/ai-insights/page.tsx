@@ -31,9 +31,14 @@ export default function AiInsightsPage() {
           and marketing attribution — powered by ML + Groq.
         </p>
         <div className="pt-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/ai-insights/pricing">Pricing AI →</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/ai-insights/pricing">Pricing AI →</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/ai-insights/ops">Operations AI →</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
