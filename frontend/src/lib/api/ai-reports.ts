@@ -169,3 +169,14 @@ export async function getAttribution(windowDays = 30): Promise<AttributionReport
     `/ai/reports/attribution?windowDays=${windowDays}`,
   );
 }
+
+export type AiReportsStatus = {
+  readonly tenantId: string;
+  readonly enabled: boolean;
+  readonly provider: "groq" | "disabled";
+  readonly prophetAvailable: boolean;
+};
+
+export async function getAiReportsStatus(): Promise<AiReportsStatus> {
+  return apiFetch<AiReportsStatus>("/ai/reports/status");
+}

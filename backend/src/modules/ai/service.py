@@ -857,34 +857,59 @@ def _nlqa_cache_key(tenant_id: UUID, question: str) -> str:
 
 
 def _is_safe_select(sql: str) -> bool:
-    """Minimal whitelist: query must be a single SELECT, must reference
-    ``tenant_id = :tenant_id``, and must not contain dangerous tokens.
+    """Conservative NL→SQL guardrail.
+
+    We don't attempt to fully parse SQL. Instead we enforce a narrow,
+    easy-to-audit subset:
+    - single SELECT statement only
+    - no comments / semicolons
+    - table references limited to an explicit allowlist
+    - tenant guard must include `tenant_id = :tenant_id`
     """
-    lower = sql.lower().strip()
+    import re  # noqa: PLC0415
+
+    s = sql.strip()
+    lower = s.lower()
+
     if not lower.startswith("select"):
         return False
-    if ";" in sql:
+    if ";" in s:
         return False
-    forbidden = [
-        " insert ",
-        " update ",
-        " delete ",
-        " drop ",
-        " alter ",
-        " truncate ",
-        " grant ",
-        " revoke ",
-        " copy ",
-        " pg_",
-        " create ",
-        " execute ",
-        " call ",
-    ]
-    lower_padded = f" {lower} "
-    if any(tok in lower_padded for tok in forbidden):
+    # Disallow SQL comments (can be used to smuggle tokens past simple checks).
+    if "--" in s or "/*" in s or "*/" in s:
         return False
-    if ":tenant_id" not in lower:
+    # Disallow CTEs and multiple statements by banning WITH at the start.
+    if lower.startswith("with "):
         return False
+
+    # Keywords / namespaces that should never appear.
+    forbidden_regex = re.compile(
+        r"\b(insert|update|delete|drop|alter|truncate|grant|revoke|copy|create|execute|call|do)\b"
+        r"|\b(pg_catalog|information_schema)\b"
+        r"|(\bpg_[a-z0-9_]+\b)",
+        re.IGNORECASE,
+    )
+    if forbidden_regex.search(s):
+        return False
+
+    # Enforce tenant guard.
+    if not re.search(r"\btenant_id\s*=\s*:tenant_id\b", s, flags=re.IGNORECASE):
+        return False
+
+    allowed_tables = {
+        "orders",
+        "order_items",
+        "customers",
+        "products",
+        "payments",
+        "campaign_touches",
+    }
+    # Extract table identifiers after FROM/JOIN and ensure they're allowlisted.
+    for _kw, ident in re.findall(r"\b(from|join)\s+([a-zA-Z_][\w\.]*)", s, flags=re.IGNORECASE):
+        base = ident.split(".", 1)[-1].lower()
+        if base not in allowed_tables:
+            return False
+
     return True
 
 

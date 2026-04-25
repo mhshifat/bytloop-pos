@@ -14,7 +14,11 @@ celery_app = Celery(
     "bytloop-pos",
     broker=settings.redis.url,
     backend=settings.redis.url,
-    include=["src.tasks.email_tasks", "src.tasks.cannabis_outbound_tasks"],
+    include=[
+        "src.tasks.email_tasks",
+        "src.tasks.cannabis_outbound_tasks",
+        "src.tasks.ai_analytics_tasks",
+    ],
 )
 
 celery_app.conf.update(
@@ -49,5 +53,13 @@ celery_app.conf.beat_schedule = {
     "cannabis-compliance-outbox-every-5m": {
         "task": "src.tasks.cannabis_outbound_tasks.compliance_outbox_sync",
         "schedule": 300.0,
+    },
+    "ai-anomaly-scan-every-30m": {
+        "task": "src.tasks.ai_analytics_tasks.scan_anomalies",
+        "schedule": 1800.0,
+    },
+    "ai-forecast-accuracy-every-6h": {
+        "task": "src.tasks.ai_analytics_tasks.forecast_accuracy",
+        "schedule": 21600.0,
     },
 }

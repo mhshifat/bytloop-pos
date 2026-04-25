@@ -15,6 +15,7 @@ from src.core.deps import DbSession, get_current_user, requires
 from src.core.errors import ValidationError
 from src.core.permissions import Permission
 from src.integrations.ai.base import AIUnavailableError
+from src.integrations.ai.factory import get_ai_adapter
 from src.modules.ai.service import AIAnalyticsService
 from src.modules.reporting.schemas import (
     AnomalyPoint,
@@ -35,6 +36,33 @@ from src.modules.reporting.schemas import (
 )
 
 router = APIRouter(prefix="/ai/reports", tags=["ai-reports"])
+
+
+@router.get(
+    "/status",
+    dependencies=[Depends(requires(Permission.REPORTS_VIEW))],
+)
+async def status_report(
+    user=Depends(get_current_user),  # type: ignore[no-untyped-def]
+) -> dict[str, object]:
+    """Surface AI-provider + optional deps state to the UI.
+
+    This endpoint avoids leaking secrets; it only reports booleans + model name.
+    """
+    adapter = get_ai_adapter()
+    prophet_available = False
+    try:
+        import prophet  # noqa: F401, PLC0415
+
+        prophet_available = True
+    except Exception:  # noqa: BLE001
+        prophet_available = False
+    return {
+        "tenantId": str(user.tenant_id),
+        "enabled": adapter.is_enabled(),
+        "provider": "groq" if adapter.is_enabled() else "disabled",
+        "prophetAvailable": prophet_available,
+    }
 
 
 @router.get(
