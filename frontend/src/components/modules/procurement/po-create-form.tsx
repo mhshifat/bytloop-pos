@@ -17,9 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/shared/ui/select";
+import { CloudinaryUploader } from "@/components/shared/cloudinary-uploader";
 import { listProducts } from "@/lib/api/catalog";
 import type { ApiError } from "@/lib/api/error";
 import { isApiError } from "@/lib/api/error";
+import { invoiceOcrToDraft } from "@/lib/api/ai-procurement";
 import { createPurchaseOrder, listSuppliers } from "@/lib/api/procurement";
 
 type Line = {
@@ -89,6 +91,29 @@ export function PoCreateForm() {
     },
   });
 
+  const ocrMutation = useMutation({
+    mutationFn: (asset: { readonly publicId: string; readonly url: string }) =>
+      invoiceOcrToDraft({ asset, currency }),
+    onError: (err) => {
+      if (isApiError(err)) setServerError(err);
+    },
+    onSuccess: (draft) => {
+      if (draft.currency) setCurrency(draft.currency);
+      if (draft.supplierId) setSupplierId(draft.supplierId);
+      if (draft.lines?.length) {
+        setLines(
+          draft.lines.map((l) => ({
+            id: newLineId(),
+            productId: l.productId ?? "",
+            quantityOrdered: l.quantity,
+            unitCostCents: l.unitCostCents,
+          })),
+        );
+      }
+      toast.success("Draft extracted from invoice. Review and create the purchase order.");
+    },
+  });
+
   return (
     <form
       onSubmit={(e) => {
@@ -121,6 +146,21 @@ export function PoCreateForm() {
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
           />
+        </div>
+        <div className="md:col-span-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium">Invoice OCR (optional)</p>
+            <span className="text-xs text-muted-foreground">Upload supplier invoice photo to prefill lines</span>
+          </div>
+          <div className="mt-2">
+            <CloudinaryUploader
+              purpose="invoice_ocr"
+              label={ocrMutation.isPending ? "Extracting…" : "Upload invoice photo"}
+              onUploaded={(asset) => {
+                ocrMutation.mutate({ publicId: asset.publicId, url: asset.secureUrl });
+              }}
+            />
+          </div>
         </div>
       </div>
 

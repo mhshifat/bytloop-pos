@@ -1,11 +1,14 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { CloudinaryUploader } from "@/components/shared/cloudinary-uploader";
 import { Button } from "@/components/shared/ui/button";
 import { Input } from "@/components/shared/ui/input";
 import { Label } from "@/components/shared/ui/label";
+import { scanIdForDob } from "@/lib/api/ai-age-restricted";
 
 type AgeVerificationDialogProps = {
   readonly open: boolean;
@@ -21,6 +24,11 @@ export function AgeVerificationDialog({
   minAgeHint,
 }: AgeVerificationDialogProps) {
   const [dob, setDob] = useState("");
+  const scan = useMutation({
+    mutationFn: (asset: { readonly publicId: string; readonly url: string }) =>
+      scanIdForDob({ asset }),
+    onSuccess: (res) => setDob(res.customerDob),
+  });
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -33,6 +41,14 @@ export function AgeVerificationDialog({
             {minAgeHint != null ? ` (minimum ${minAgeHint}+).` : "."} Enter the
             customer&apos;s date of birth.
           </Dialog.Description>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-medium">Scan ID (optional)</p>
+            <CloudinaryUploader
+              purpose="id_scan"
+              label={scan.isPending ? "Scanning…" : "Upload ID photo"}
+              onUploaded={(asset) => scan.mutate({ publicId: asset.publicId, url: asset.secureUrl })}
+            />
+          </div>
           <div className="mt-4 space-y-2">
             <Label htmlFor="pos-dob">Date of birth</Label>
             <Input

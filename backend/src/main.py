@@ -25,6 +25,12 @@ from src.modules.ai.assistant_router import router as ai_assistant_router
 from src.modules.ai.catalog_router import router as ai_catalog_router
 from src.modules.ai.translate_router import router as ai_translate_router
 from src.modules.ai.touch_router import router as campaign_touches_router
+from src.modules.ai.procurement_vision_router import router as ai_procurement_vision_router
+from src.modules.ai.inventory_vision_router import router as ai_inventory_vision_router
+from src.modules.ai.age_vision_router import router as ai_age_vision_router
+from src.modules.ai.jewelry_vision_router import router as ai_jewelry_vision_router
+from src.modules.ai.planogram_router import router as ai_planogram_router
+from src.modules.ai.cafeteria_vision_router import router as ai_cafeteria_vision_router
 from src.modules.audit.router import router as audit_router
 from src.modules.catalog.router import categories_router, router as catalog_router
 from src.modules.customers.router import router as customers_router
@@ -45,6 +51,7 @@ from src.modules.sales.router import router as sales_router
 from src.modules.shifts.router import router as shifts_router
 from src.modules.tax.router import router as tax_router
 from src.modules.tenants.router import router as tenant_router
+from src.modules.media.router import router as media_router
 from src.integrations.payments.webhooks import router as payment_webhooks_router
 from src.verticals.deployment.self_checkout.router import router as self_checkout_router
 from src.verticals.deployment.softpos.router import router as softpos_router
@@ -197,6 +204,7 @@ def create_app() -> FastAPI:
     app.include_router(discounts_router)
     app.include_router(tax_router)
     app.include_router(tenant_router)
+    app.include_router(media_router)
     app.include_router(shifts_router)
     app.include_router(sales_router)
     app.include_router(reporting_router)
@@ -204,6 +212,12 @@ def create_app() -> FastAPI:
     app.include_router(ai_assistant_router)
     app.include_router(ai_catalog_router)
     app.include_router(ai_translate_router)
+    app.include_router(ai_procurement_vision_router)
+    app.include_router(ai_inventory_vision_router)
+    app.include_router(ai_age_vision_router)
+    app.include_router(ai_jewelry_vision_router)
+    app.include_router(ai_planogram_router)
+    app.include_router(ai_cafeteria_vision_router)
     app.include_router(campaign_touches_router)
     app.include_router(audit_router)
     app.include_router(plugins_router)

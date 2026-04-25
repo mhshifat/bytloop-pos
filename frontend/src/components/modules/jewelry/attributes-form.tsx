@@ -9,9 +9,11 @@ import { SkeletonCard } from "@/components/shared/skeleton-card";
 import { Button } from "@/components/shared/ui/button";
 import { Input } from "@/components/shared/ui/input";
 import { Label } from "@/components/shared/ui/label";
+import { CloudinaryUploader } from "@/components/shared/cloudinary-uploader";
 import type { ApiError } from "@/lib/api/error";
 import { isApiError } from "@/lib/api/error";
 import { getAttributes, upsertAttributes } from "@/lib/api/jewelry";
+import { estimateJewelryFromPhoto } from "@/lib/api/ai-jewelry";
 
 type JewelryAttributesFormProps = {
   readonly productId: string;
@@ -74,6 +76,20 @@ export function JewelryAttributesForm({ productId }: JewelryAttributesFormProps)
     },
   });
 
+  const photoMutation = useMutation({
+    mutationFn: (asset: { readonly publicId: string; readonly url: string }) =>
+      estimateJewelryFromPhoto({ asset }),
+    onSuccess: (res) => {
+      if (res.karat != null) setKarat(res.karat);
+      if (res.grossGrams) setGross(res.grossGrams);
+      if (res.netGrams) setNet(res.netGrams);
+      toast.success("Estimate applied. Review and save.");
+    },
+    onError: (err) => {
+      if (isApiError(err)) setServerError(err);
+    },
+  });
+
   if (isLoading) return <SkeletonCard lines={2} />;
 
   return (
@@ -84,6 +100,19 @@ export function JewelryAttributesForm({ productId }: JewelryAttributesFormProps)
       }}
       className="grid gap-3 md:grid-cols-4"
     >
+      <div className="md:col-span-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium">Photo assist (optional)</p>
+          <span className="text-xs text-muted-foreground">Upload hallmark photo to prefill karat</span>
+        </div>
+        <div className="mt-2">
+          <CloudinaryUploader
+            purpose="jewelry"
+            label={photoMutation.isPending ? "Estimating…" : "Upload jewelry photo"}
+            onUploaded={(asset) => photoMutation.mutate({ publicId: asset.publicId, url: asset.secureUrl })}
+          />
+        </div>
+      </div>
       <div className="space-y-1.5">
         <Label htmlFor="jewelry-karat">Karat</Label>
         <Input

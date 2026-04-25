@@ -179,6 +179,19 @@ class AIConfig(_Base):
     max_tokens: int = 800
 
 
+class CloudinaryConfig(_Base):
+    """Cloudinary media storage (direct uploads from clients).
+
+    Used for AI/computer-vision workflows (invoices, IDs, shelf photos, etc.).
+    """
+
+    model_config = _env_settings("CLOUDINARY_")
+
+    cloud_name: str = Field(default="", alias="CLOUD_NAME")
+    api_key: str = Field(default="", alias="API_KEY")
+    api_secret: SecretStr = Field(default=SecretStr(""), alias="API_SECRET")
+
+
 class PaymentConfig(_Base):
     model_config = _env_settings("PAYMENTS_")
 
@@ -250,6 +263,7 @@ class Settings:
         self.observability = ObservabilityConfig()
         self.cannabis = CannabisConfig()
         self.ai = AIConfig()
+        self.cloudinary = CloudinaryConfig()
 
 
 @lru_cache(maxsize=1)
