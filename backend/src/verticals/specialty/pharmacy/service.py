@@ -135,6 +135,10 @@ class PharmacyService:
             existing.strength = strength
             await self._session.flush()
             return existing
+        if existing is not None and existing.tenant_id != tenant_id:
+            # Defensive against IDOR / cross-tenant UUID guessing: a product_id
+            # from another tenant must not be mutable.
+            raise ForbiddenError("You don't have permission to do that.")
         meta = DrugMetadata(
             product_id=product_id,
             tenant_id=tenant_id,

@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -18,6 +19,7 @@ from src.core.db import dispose_engine, engine_state
 from src.core.errors import register_error_handlers
 from src.core.idempotency import IdempotencyMiddleware
 from src.core.logging import configure_logging
+from src.core.real_ip import RealIpMiddleware
 from src.modules.ai.router import router as ai_reports_router
 from src.modules.ai.touch_router import router as campaign_touches_router
 from src.modules.audit.router import router as audit_router
@@ -96,6 +98,24 @@ class StripSensitiveHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Set baseline HTTP security headers for all responses.
+
+    This is intentionally conservative for an API surface: no CSP here (belongs
+    on the frontend) and no HSTS (should be set at the edge / proxy).
+    """
+
+    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
+        response: Response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        response.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+        response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+        return response
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     configure_logging()
@@ -134,7 +154,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    app.add_middleware(RealIpMiddleware)
+    if settings.app.allowed_hosts:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.app.allowed_hosts)
     app.add_middleware(StripSensitiveHeadersMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
     # Idempotency runs close to the handler so it can see the final response;
     # correlation/session/CORS wrap around it.
     app.add_middleware(IdempotencyMiddleware)

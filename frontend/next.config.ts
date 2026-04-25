@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
       "next-intl/config": "./src/lib/i18n/request.ts",
     },
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=()" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-site" },
+        ],
+      },
+    ];
+  },
   // Backend URL for server-side fetches (RSC → FastAPI).
   env: {
     NEXT_PUBLIC_API_BASE_URL:

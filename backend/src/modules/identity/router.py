@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 
+from src.core import cache
 from src.core.config import settings
 from src.core.deps import (
     DbSession,
@@ -53,9 +54,100 @@ def _set_refresh_cookie(response: Response, tokens: LoginTokens) -> None:
         path="/",
     )
 
+def _client_ip(request: Request) -> str:
+    # Filled by RealIpMiddleware. Fall back defensively.
+    ip = getattr(request.state, "real_ip", None)
+    if isinstance(ip, str) and ip:
+        return ip
+    return request.client.host if request.client else "unknown"
+
+
+async def _rate_limit_ok(*, key: str, limit: int, window_seconds: int) -> bool:
+    """Fixed-window counter. Redis down => fail open."""
+    current_raw = await cache.get_str(key)
+    if current_raw is None:
+        await cache.set_str(key, "1", ttl_seconds=window_seconds)
+        return True
+    count = int(current_raw) if current_raw.isdigit() else 0
+    if count >= limit:
+        return False
+    await cache.set_str(key, str(count + 1), ttl_seconds=window_seconds)
+    return True
+
+
+async def _enforce_rate_limits_login(request: Request, email: str) -> None:
+    from src.core.errors import RateLimitError
+
+    ip = _client_ip(request)
+    if not await _rate_limit_ok(key=f"pos:rl:auth:login:ip:{ip}", limit=20, window_seconds=60):
+        raise RateLimitError("Too many login attempts. Please wait a moment.")
+    if not await _rate_limit_ok(
+        key=f"pos:rl:auth:login:email:{email.lower()}",
+        limit=12,
+        window_seconds=300,
+    ):
+        raise RateLimitError("Too many login attempts. Please wait a few minutes.")
+
+
+async def _enforce_rate_limits_forgot(request: Request, email: str) -> None:
+    from src.core.errors import RateLimitError
+
+    ip = _client_ip(request)
+    if not await _rate_limit_ok(key=f"pos:rl:auth:forgot:ip:{ip}", limit=10, window_seconds=60):
+        raise RateLimitError("Too many requests. Please wait a moment.")
+    if not await _rate_limit_ok(
+        key=f"pos:rl:auth:forgot:email:{email.lower()}",
+        limit=3,
+        window_seconds=900,
+    ):
+        raise RateLimitError("Too many requests. Please wait a few minutes.")
+
+
+async def _enforce_rate_limits_reset(request: Request, token: str) -> None:
+    from src.core.errors import RateLimitError
+
+    ip = _client_ip(request)
+    if not await _rate_limit_ok(key=f"pos:rl:auth:reset:ip:{ip}", limit=20, window_seconds=60):
+        raise RateLimitError("Too many requests. Please wait a moment.")
+    if not await _rate_limit_ok(
+        key=f"pos:rl:auth:reset:token:{token[:32]}",
+        limit=10,
+        window_seconds=900,
+    ):
+        raise RateLimitError("Too many reset attempts. Please wait a few minutes.")
+
+
+async def _enforce_rate_limits_signup(request: Request, email: str) -> None:
+    from src.core.errors import RateLimitError
+
+    ip = _client_ip(request)
+    # 5/min per IP + 3/30min per email
+    if not await _rate_limit_ok(key=f"pos:rl:auth:signup:ip:{ip}", limit=5, window_seconds=60):
+        raise RateLimitError("Too many signup attempts. Please wait a moment.")
+    if not await _rate_limit_ok(
+        key=f"pos:rl:auth:signup:email:{email.lower()}",
+        limit=3,
+        window_seconds=1800,
+    ):
+        raise RateLimitError("Too many signup attempts. Please wait a while.")
+
+
+async def _enforce_rate_limits_resend_activation(request: Request, email: str) -> None:
+    from src.core.errors import RateLimitError
+
+    ip = _client_ip(request)
+    # 10/15min per IP (service already enforces per-email cooldown)
+    if not await _rate_limit_ok(
+        key=f"pos:rl:auth:resend_activation:ip:{ip}",
+        limit=10,
+        window_seconds=900,
+    ):
+        raise RateLimitError("Too many requests. Please wait a few minutes.")
+
 
 @router.post("/signup", response_model=SignupResponse, status_code=status.HTTP_201_CREATED)
-async def signup(req: SignupRequest, db: DbSession) -> SignupResponse:
+async def signup(req: SignupRequest, db: DbSession, request: Request) -> SignupResponse:
+    await _enforce_rate_limits_signup(request, req.email)
     service = _build_service(db)
     user = await service.signup(
         first_name=req.first_name,
@@ -74,14 +166,18 @@ async def activate(req: ActivateRequest, db: DbSession) -> Response:
 
 @router.post("/resend-activation", response_model=ResendActivationResponse)
 async def resend_activation(
-    req: ResendActivationRequest, db: DbSession
+    req: ResendActivationRequest, db: DbSession, request: Request
 ) -> ResendActivationResponse:
+    await _enforce_rate_limits_resend_activation(request, req.email)
     await _build_service(db).resend_activation(email=req.email)
     return ResendActivationResponse(sent=True, cooldown_remaining_seconds=0)
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(req: LoginRequest, db: DbSession, response: Response) -> TokenResponse:
+async def login(
+    req: LoginRequest, db: DbSession, response: Response, request: Request
+) -> TokenResponse:
+    await _enforce_rate_limits_login(request, req.email)
     tokens = await _build_service(db).login_with_password(
         email=req.email, password=req.password
     )
@@ -111,13 +207,19 @@ async def logout(response: Response) -> Response:
 
 
 @router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
-async def forgot_password(req: ForgotPasswordRequest, db: DbSession) -> Response:
+async def forgot_password(
+    req: ForgotPasswordRequest, db: DbSession, request: Request
+) -> Response:
+    await _enforce_rate_limits_forgot(request, req.email)
     await _build_service(db).send_password_reset(email=req.email)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
-async def reset_password(req: ResetPasswordRequest, db: DbSession) -> Response:
+async def reset_password(
+    req: ResetPasswordRequest, db: DbSession, request: Request
+) -> Response:
+    await _enforce_rate_limits_reset(request, req.token)
     await _build_service(db).reset_password(token=req.token, new_password=req.new_password)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

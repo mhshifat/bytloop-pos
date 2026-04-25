@@ -44,6 +44,26 @@ class AppConfig(_Base):
     env: Literal["development", "test", "staging", "production"] = "development"
     debug: bool = True
     secret_key: SecretStr
+    # Optional host allowlist (TrustedHostMiddleware). Empty = disabled.
+    # Example: "api.example.com,*.onrender.com"
+    allowed_hosts_raw: str = Field(default="", alias="ALLOWED_HOSTS")
+
+    @property
+    def allowed_hosts(self) -> list[str]:
+        return _csv(self.allowed_hosts_raw)
+
+    # Real client IP handling (for rate limiting / audit). If enabled, we only
+    # trust proxy headers (e.g. X-Forwarded-For) when the immediate peer IP is
+    # within ``trusted_proxy_cidrs``.
+    trust_proxy_headers: bool = Field(default=False, alias="TRUST_PROXY_HEADERS")
+    trusted_proxy_cidrs_raw: str = Field(
+        default="127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
+        alias="TRUSTED_PROXY_CIDRS",
+    )
+
+    @property
+    def trusted_proxy_cidrs(self) -> list[str]:
+        return _csv(self.trusted_proxy_cidrs_raw)
 
 
 class DatabaseConfig(_Base):
