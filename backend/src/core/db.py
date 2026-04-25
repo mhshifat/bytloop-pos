@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -20,11 +21,46 @@ from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 from src.core.config import settings
 
 
-def _async_database_url(url: str) -> str:
+def _to_asyncpg_scheme(url: str) -> str:
     """Use asyncpg — bare ``postgresql://`` would make SQLAlchemy try psycopg2 (not a dep)."""
     if url.startswith("postgresql://") and not url.startswith("postgresql+"):
         return "postgresql+asyncpg://" + url.removeprefix("postgresql://")
     return url
+
+
+def get_asyncpg_connection_settings(url: str) -> tuple[str, dict[str, Any]]:
+    """Build async DSN and ``connect_args`` for asyncpg.
+
+    libpq query params like ``sslmode`` are not valid for asyncpg's
+    ``connect()`` and are stripped; SSL intent is mapped to ``ssl=`` instead.
+    """
+    dsn = _to_asyncpg_scheme(url)
+    parsed = urlparse(dsn)
+    connect_args: dict[str, Any] = {}
+    new_qsl: list[tuple[str, str]] = []
+    ssl_mode: str | None = None
+    for k, v in parse_qsl(parsed.query, keep_blank_values=True):
+        if k == "sslmode":
+            ssl_mode = v
+            continue
+        new_qsl.append((k, v))
+    if ssl_mode is not None:
+        mode = ssl_mode.lower()
+        if mode in ("require", "verify-ca", "verify-full"):
+            connect_args["ssl"] = True
+        elif mode == "disable":
+            connect_args["ssl"] = False
+        # allow / prefer: no explicit ssl; asyncpg uses its own defaults
+    new_query = urlencode(new_qsl, doseq=True)
+    clean = urlunparse(
+        (parsed.scheme, parsed.netloc, parsed.path, "", new_query, parsed.fragment),
+    )
+    return clean, connect_args
+
+
+def _async_database_url(url: str) -> str:
+    """Back-compat: DSN only (use :func:`get_asyncpg_connection_settings` for full picture)."""
+    return get_asyncpg_connection_settings(url)[0]
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
@@ -32,8 +68,10 @@ class Base(MappedAsDataclass, DeclarativeBase):
 
 
 def _build_engine() -> AsyncEngine:
+    url, connect_args = get_asyncpg_connection_settings(settings.database.url)
     return create_async_engine(
-        _async_database_url(settings.database.url),
+        url,
+        connect_args=connect_args,
         pool_size=settings.database.pool_size,
         max_overflow=settings.database.max_overflow,
         pool_recycle=settings.database.pool_recycle_seconds,

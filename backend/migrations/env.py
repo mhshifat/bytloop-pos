@@ -8,10 +8,10 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from src.core.config import settings
-from src.core.db import Base, _async_database_url
+from src.core.db import Base, get_asyncpg_connection_settings
 
 # Ensure every module's entities are imported so Base.metadata is complete.
 # As modules are added, import them here.
@@ -41,7 +41,9 @@ from src.verticals.specialty.rental import entity as _rental_entity
 
 
 config = context.config
-_alembic_url = _async_database_url(settings.database.url)
+_alembic_url, _alembic_connect_args = get_asyncpg_connection_settings(
+    settings.database.url,
+)
 config.set_main_option("sqlalchemy.url", _alembic_url)
 
 if config.config_file_name is not None:
@@ -73,9 +75,9 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_migrations_online() -> None:
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    connectable = create_async_engine(
+        _alembic_url,
+        connect_args=_alembic_connect_args,
         poolclass=pool.NullPool,
     )
     async with connectable.connect() as connection:
