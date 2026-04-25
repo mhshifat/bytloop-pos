@@ -35,6 +35,7 @@ from src.modules.ai.supply_chain_router import router as ai_supply_chain_router
 from src.modules.ai.pricing_router import router as ai_pricing_router
 from src.modules.ai.ops_router import router as ai_ops_router
 from src.modules.ai.risk_router import router as ai_risk_router
+from src.modules.ai.vertical_router import router as ai_vertical_router
 from src.modules.audit.router import router as audit_router
 from src.modules.catalog.router import categories_router, router as catalog_router
 from src.modules.customers.router import router as customers_router
@@ -234,6 +235,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_pricing_router)
     app.include_router(ai_ops_router)
     app.include_router(ai_risk_router)
+    app.include_router(ai_vertical_router)
     app.include_router(campaign_touches_router)
     app.include_router(audit_router)
     app.include_router(plugins_router)

@@ -41,6 +41,9 @@ export default function AiInsightsPage() {
             <Button asChild variant="outline" size="sm">
               <Link href="/ai-insights/risk">Fraud & risk →</Link>
             </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/ai-insights/vertical">Vertical AI →</Link>
+            </Button>
           </div>
         </div>
       </header>
