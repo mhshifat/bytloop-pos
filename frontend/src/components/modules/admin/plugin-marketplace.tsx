@@ -15,6 +15,7 @@ import {
   listInstalledPlugins,
   togglePlugin,
   uninstallPlugin,
+  type PluginInstall,
 } from "@/lib/api/plugins";
 
 export function PluginMarketplace() {
@@ -30,8 +31,10 @@ export function PluginMarketplace() {
   });
 
   const installedByCode = useMemo(() => {
-    const map = new Map<string, (typeof installed extends readonly (infer T)[] ? T : never)>();
-    for (const i of installed ?? []) map.set(i.code, i);
+    const map = new Map<string, PluginInstall>();
+    for (const i of installed ?? []) {
+      map.set(i.code, i);
+    }
     return map;
   }, [installed]);
 

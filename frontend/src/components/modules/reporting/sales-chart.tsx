@@ -89,10 +89,13 @@ export function SalesChart() {
                     borderRadius: 6,
                     fontSize: 12,
                   }}
-                  formatter={(v: number, name) => [
-                    name === "revenue" ? `BDT ${v.toFixed(2)}` : `${v} orders`,
-                    name === "revenue" ? "Revenue" : "Orders",
-                  ]}
+                  formatter={(v, name) => {
+                    const n = v == null ? 0 : Number(v);
+                    return [
+                      name === "revenue" ? `BDT ${n.toFixed(2)}` : `${n} orders`,
+                      name === "revenue" ? "Revenue" : "Orders",
+                    ] as [string, string];
+                  }}
                 />
                 <Area
                   type="monotone"

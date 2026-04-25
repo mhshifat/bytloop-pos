@@ -82,9 +82,10 @@ function normalize(raw: unknown): QueuedMutation {
 }
 
 function backoffMs(attempts: number): number {
-  const idx = Math.min(attempts, BACKOFF_SECONDS.length - 1);
+  const cap = Math.max(0, BACKOFF_SECONDS.length - 1);
+  const idx = Math.min(attempts, cap);
   // Jitter ±20% so a fleet of offline tablets doesn't retry in lock-step.
-  const base = BACKOFF_SECONDS[idx] * 1000;
+  const base = (BACKOFF_SECONDS[idx] ?? BACKOFF_SECONDS[cap] ?? 600) * 1000;
   const jitter = (Math.random() - 0.5) * 0.4 * base;
   return Math.max(1000, Math.round(base + jitter));
 }

@@ -45,7 +45,8 @@ export function initTracker(): void {
     client = {
       identify: (userId, traits) => ph.identify(userId, traits),
       track: (event, props) => ph.capture(event, props),
-      page: (name, props) => ph.capture("$pageview", { $current_url: name, ...(props ?? {}) }),
+      page: (name, props) =>
+        ph.capture("$pageview", { $current_url: name ?? "", ...(props ?? {}) }),
       reset: () => ph.reset(),
     };
   });

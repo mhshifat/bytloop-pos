@@ -56,10 +56,8 @@ export function AuditLogList() {
         </TableHeader>
         <TableBody>
           {data.items.map((e) => {
-            const href =
-              e.resourceId && RESOURCE_HREF[e.resourceType]
-                ? RESOURCE_HREF[e.resourceType](e.resourceId)
-                : null;
+            const toHref = RESOURCE_HREF[e.resourceType];
+            const href = e.resourceId && toHref != null ? toHref(e.resourceId) : null;
             return (
               <TableRow key={e.id}>
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">

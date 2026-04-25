@@ -87,7 +87,7 @@ export function MetalRatesEditor() {
             <SelectContent>
               {METALS.map((m) => (
                 <SelectItem key={m} value={m}>
-                  {m[0].toUpperCase() + m.slice(1)}
+                  {m.charAt(0).toUpperCase() + m.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>

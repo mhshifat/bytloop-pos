@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { TicketPercent, X } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/components/shared/ui/button";
 import {
   Select,
   SelectContent,

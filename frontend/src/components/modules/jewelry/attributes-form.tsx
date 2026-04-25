@@ -40,13 +40,30 @@ export function JewelryAttributesForm({ productId }: JewelryAttributesFormProps)
   }, [data]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      upsertAttributes(productId, {
+    mutationFn: () => {
+      const base = data
+        ? {
+            metal: data.metal,
+            makingChargePct: data.makingChargePct,
+            makingChargePerGramCents: data.makingChargePerGramCents,
+            wastagePct: data.wastagePct,
+            stoneValueCents: data.stoneValueCents,
+          }
+        : {
+            metal: "gold",
+            makingChargePct: "0",
+            makingChargePerGramCents: 0,
+            wastagePct: "0",
+            stoneValueCents: 0,
+          };
+      return upsertAttributes(productId, {
+        ...base,
         karat,
         grossGrams: gross,
         netGrams: net,
         certificateNo: cert || null,
-      }),
+      });
+    },
     onError: (err) => {
       if (isApiError(err)) setServerError(err);
     },
