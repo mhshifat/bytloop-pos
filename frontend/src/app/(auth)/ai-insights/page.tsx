@@ -9,6 +9,8 @@ import { ChurnRiskList } from "@/components/modules/ai/churn-risk-list";
 import { CohortHeatmap } from "@/components/modules/ai/cohort-heatmap";
 import { ForecastChart } from "@/components/modules/ai/forecast-chart";
 import { buildMetadata } from "@/lib/seo";
+import Link from "next/link";
+import { Button } from "@/components/shared/ui/button";
 
 export const metadata: Metadata = buildMetadata({
   title: "AI insights",
@@ -28,6 +30,11 @@ export default function AiInsightsPage() {
           Forecasts, anomalies, churn risk, cohort retention, peer benchmarks,
           and marketing attribution — powered by ML + Groq.
         </p>
+        <div className="pt-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/ai-insights/pricing">Pricing AI →</Link>
+          </Button>
+        </div>
       </header>
 
       <ForecastChart />
