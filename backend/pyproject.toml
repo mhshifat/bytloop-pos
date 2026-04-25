@@ -1,0 +1,101 @@
+[project]
+name = "bytloop-pos-backend"
+version = "0.0.1"
+description = "Bytloop POS — FastAPI modular monolith"
+requires-python = ">=3.12"
+readme = "../README.md"
+
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "redis>=5.2",
+    "celery[redis]>=5.4",
+    "python-jose[cryptography]>=3.3",
+    "argon2-cffi>=23.1",
+    "authlib>=1.3",               # OAuth (Google, GitHub)
+    "itsdangerous>=2.2",          # Starlette SessionMiddleware (OAuth state)
+    "httpx>=0.28",
+    "structlog>=24.4",
+    "python-ulid>=3.0",
+    "cachetools>=5.5",
+    "python-multipart>=0.0.18",   # form parsing (OAuth callbacks)
+    "email-validator>=2.2",
+    # AI / ML stack — forecasting, anomaly detection, churn/LTV classifiers,
+    # and the Groq-backed natural-language reporting endpoints.
+    "groq>=0.11",
+    "scikit-learn>=1.5",
+    "pandas>=2.2",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+# Prophet is a ~500 MB transitive dep (cmdstanpy + numpy + pandas); only
+# install when you actually want the forecaster upgrade. Deployments that
+# run seasonal-naive don't need it.
+forecasting = [
+    "prophet>=1.1.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "factory-boy>=3.3",
+    "schemathesis>=3.39",
+    "mypy>=1.13",
+    "ruff>=0.8",
+    "import-linter>=2.1",
+    "freezegun>=1.5",
+    "respx>=0.21",                # httpx mocking for OAuth tests
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests", "src"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-branch",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = ["src/tasks/*", "*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 1
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "C4", "SIM", "TCH", "RUF",
+]
+ignore = ["E501"]  # let formatter handle line length
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N802", "N803"]  # test function names may use non-snake patterns

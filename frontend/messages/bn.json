@@ -1,0 +1,79 @@
+{
+  "app": {
+    "name": "বাইটলুপ POS",
+    "tagline": "প্রতিটি ব্যবসার জন্য POS"
+  },
+  "nav": {
+    "dashboard": "ড্যাশবোর্ড",
+    "posTerminal": "POS টার্মিনাল",
+    "products": "পণ্য",
+    "inventory": "ইনভেন্টরি",
+    "orders": "অর্ডার",
+    "customers": "গ্রাহকগণ",
+    "verticals": "ভার্টিক্যাল",
+    "admin": "অ্যাডমিন",
+    "settings": "সেটিংস",
+    "staff": "স্টাফ",
+    "auditLog": "অডিট লগ"
+  },
+  "auth": {
+    "signUp": "অ্যাকাউন্ট তৈরি করুন",
+    "signIn": "সাইন ইন",
+    "signOut": "সাইন আউট",
+    "firstName": "নামের প্রথম অংশ",
+    "lastName": "নামের শেষ অংশ",
+    "email": "ইমেইল",
+    "password": "পাসওয়ার্ড",
+    "confirmPassword": "পাসওয়ার্ড নিশ্চিত করুন",
+    "acceptTerms": "আমি গোপনীয়তা নীতি ও ব্যবহারের শর্তাবলীতে সম্মত।",
+    "resendActivation": "সক্রিয়করণ ইমেইল আবার পাঠান",
+    "checkYourEmail": "আপনার ইমেইল দেখুন",
+    "activatePending": "আপনার অ্যাকাউন্ট এখনো সক্রিয় হয়নি।",
+    "forgotPassword": "পাসওয়ার্ড ভুলে গেছেন?",
+    "resetPassword": "পাসওয়ার্ড রিসেট করুন",
+    "backToSignIn": "সাইন ইনে ফিরে যান",
+    "lastUsed": "শেষ ব্যবহৃত"
+  },
+  "pos": {
+    "currentSale": "বর্তমান বিক্রয়",
+    "total": "মোট",
+    "chargeCash": "নগদে চার্জ করুন",
+    "chargeOffline": "অফলাইনে চার্জ করুন",
+    "processing": "প্রসেস করা হচ্ছে…",
+    "searchPlaceholder": "পণ্য খুঁজুন, বারকোড স্ক্যান করুন…",
+    "emptyCart": "বিক্রয় শুরু করতে পণ্যে ট্যাপ করুন বা স্ক্যান করুন।",
+    "savedOffline": "অফলাইনে সংরক্ষিত। অনলাইনে ফিরলে সিঙ্ক হবে।"
+  },
+  "orders": {
+    "title": "অর্ডার",
+    "number": "নাম্বার",
+    "type": "ধরন",
+    "status": "স্ট্যাটাস",
+    "total": "মোট",
+    "opened": "শুরু",
+    "empty": "এখনো কোনো অর্ডার নেই",
+    "emptyHint": "POS টার্মিনাল থেকে প্রথম বিক্রয় নিন।"
+  },
+  "errors": {
+    "somethingWentWrong": "কিছু ভুল হয়েছে",
+    "copy": "কপি",
+    "copied": "কপি হয়েছে",
+    "tryAgain": "আবার চেষ্টা করুন",
+    "dismiss": "বাতিল"
+  },
+  "orderStatus": {
+    "open": "চালু",
+    "completed": "সম্পন্ন",
+    "voided": "বাতিল",
+    "refunded": "ফেরত দেওয়া"
+  },
+  "orderType": {
+    "retail": "খুচরা",
+    "dine_in": "ডাইন-ইন",
+    "takeaway": "টেকঅ্যাওয়ে",
+    "delivery": "ডেলিভারি",
+    "appointment": "অ্যাপয়েন্টমেন্ট",
+    "job_card": "জব কার্ড",
+    "rental": "ভাড়া"
+  }
+}

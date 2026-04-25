@@ -1,0 +1,97 @@
+# ──────────────────────────────────────────────
+# Secrets & env
+# ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# ──────────────────────────────────────────────
+# Python / backend
+# ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.pytype/
+.pyre/
+dist/
+build/
+*.egg-info/
+*.egg
+.uv/
+uv.lock
+!backend/uv.lock
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ──────────────────────────────────────────────
+# Node / frontend
+# ──────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.next/
+out/
+.turbo/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# pnpm is the ONLY allowed package manager
+package-lock.json
+yarn.lock
+
+# ──────────────────────────────────────────────
+# Test / coverage
+# ──────────────────────────────────────────────
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+.vitest-cache/
+
+# ──────────────────────────────────────────────
+# IDE / OS
+# ──────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ──────────────────────────────────────────────
+# Logs
+# ──────────────────────────────────────────────
+logs/
+*.log
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+
+# ──────────────────────────────────────────────
+# Generated
+# ──────────────────────────────────────────────
+frontend/src/lib/api-client/generated/

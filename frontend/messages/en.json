@@ -1,0 +1,79 @@
+{
+  "app": {
+    "name": "Bytloop POS",
+    "tagline": "The POS for every kind of business"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "posTerminal": "POS terminal",
+    "products": "Products",
+    "inventory": "Inventory",
+    "orders": "Orders",
+    "customers": "Customers",
+    "verticals": "Verticals",
+    "admin": "Admin",
+    "settings": "Settings",
+    "staff": "Staff",
+    "auditLog": "Audit log"
+  },
+  "auth": {
+    "signUp": "Create account",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "acceptTerms": "I agree to the Privacy Policy and Terms of Service.",
+    "resendActivation": "Resend activation email",
+    "checkYourEmail": "Check your email",
+    "activatePending": "Your account is not activated yet.",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "backToSignIn": "Back to sign in",
+    "lastUsed": "Last used"
+  },
+  "pos": {
+    "currentSale": "Current sale",
+    "total": "Total",
+    "chargeCash": "Charge cash",
+    "chargeOffline": "Charge (offline)",
+    "processing": "Processing…",
+    "searchPlaceholder": "Search products, scan barcode…",
+    "emptyCart": "Scan a product or tap a tile to start a sale.",
+    "savedOffline": "Saved offline. Will sync when you're back online."
+  },
+  "orders": {
+    "title": "Orders",
+    "number": "Number",
+    "type": "Type",
+    "status": "Status",
+    "total": "Total",
+    "opened": "Opened",
+    "empty": "No orders yet",
+    "emptyHint": "Charge your first sale on the POS terminal."
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "copy": "Copy",
+    "copied": "Copied",
+    "tryAgain": "Try again",
+    "dismiss": "Dismiss"
+  },
+  "orderStatus": {
+    "open": "Open",
+    "completed": "Completed",
+    "voided": "Voided",
+    "refunded": "Refunded"
+  },
+  "orderType": {
+    "retail": "Retail",
+    "dine_in": "Dine-in",
+    "takeaway": "Takeaway",
+    "delivery": "Delivery",
+    "appointment": "Appointment",
+    "job_card": "Job card",
+    "rental": "Rental"
+  }
+}
