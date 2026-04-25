@@ -52,6 +52,8 @@ from src.modules.shifts.router import router as shifts_router
 from src.modules.tax.router import router as tax_router
 from src.modules.tenants.router import router as tenant_router
 from src.modules.media.router import router as media_router
+from src.modules.personalization.router import router as personalization_router
+from src.modules.personalization.recommendations_router import router as personalization_recs_router
 from src.integrations.payments.webhooks import router as payment_webhooks_router
 from src.verticals.deployment.self_checkout.router import router as self_checkout_router
 from src.verticals.deployment.softpos.router import router as softpos_router
@@ -205,6 +207,8 @@ def create_app() -> FastAPI:
     app.include_router(tax_router)
     app.include_router(tenant_router)
     app.include_router(media_router)
+    app.include_router(personalization_router)
+    app.include_router(personalization_recs_router)
     app.include_router(shifts_router)
     app.include_router(sales_router)
     app.include_router(reporting_router)

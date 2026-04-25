@@ -14,6 +14,8 @@ import { formatMoney } from "@/lib/utils/money";
 import { posCartQuickLinks } from "@/lib/verticals/pos-store-mode";
 
 import { ElectronicsSerialDialog } from "./electronics-serial-dialog";
+import { UpsellPanel } from "./upsell-panel";
+import { PairingsPanel } from "./pairings-panel";
 
 type CartPanelProps = {
   readonly verticalProfile?: string;
@@ -209,6 +211,8 @@ export function CartPanel({ verticalProfile = VerticalProfile.RETAIL_GENERAL }: 
           </li>
         ))}
       </ul>
+      <UpsellPanel />
+      <PairingsPanel verticalProfile={verticalProfile} />
       {isLiquor && exciseCents > 0 ? (
         <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
           Subtotal {formatMoney(subtotalCents, lines[0]?.currency ?? "BDT")} + excise{" "}

@@ -18,6 +18,7 @@ celery_app = Celery(
         "src.tasks.email_tasks",
         "src.tasks.cannabis_outbound_tasks",
         "src.tasks.ai_analytics_tasks",
+        "src.tasks.personalization_tasks",
     ],
 )
 
@@ -60,6 +61,10 @@ celery_app.conf.beat_schedule = {
     },
     "ai-forecast-accuracy-every-6h": {
         "task": "src.tasks.ai_analytics_tasks.forecast_accuracy",
+        "schedule": 21600.0,
+    },
+    "p13n-churn-email-cadence-every-6h": {
+        "task": "src.tasks.personalization_tasks.churn_email_cadence",
         "schedule": 21600.0,
     },
 }

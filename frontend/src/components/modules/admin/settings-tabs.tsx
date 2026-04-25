@@ -3,6 +3,7 @@
 import { BrandSection } from "@/components/modules/admin/brand-section";
 import { CategoriesSection } from "@/components/modules/admin/categories-section";
 import { DiscountsSection } from "@/components/modules/admin/discounts-section";
+import { LoyaltyAutoTuneSection } from "@/components/modules/admin/loyalty-auto-tune-section";
 import { LocationsSection } from "@/components/modules/admin/locations-section";
 import { TaxRulesSection } from "@/components/modules/admin/tax-rules-section";
 import { TenantSection } from "@/components/modules/admin/tenant-section";
@@ -15,6 +16,7 @@ const tabs = [
   { value: "categories", label: "Categories" },
   { value: "tax", label: "Tax rules" },
   { value: "discounts", label: "Discounts" },
+  { value: "loyalty", label: "Café loyalty" },
 ] as const;
 
 export function SettingsTabs() {
@@ -51,6 +53,9 @@ export function SettingsTabs() {
       </TabsContent>
       <TabsContent value="discounts" className="mt-0">
         <DiscountsSection />
+      </TabsContent>
+      <TabsContent value="loyalty" className="mt-0">
+        <LoyaltyAutoTuneSection />
       </TabsContent>
     </Tabs>
   );

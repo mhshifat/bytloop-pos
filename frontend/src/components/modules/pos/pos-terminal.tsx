@@ -21,6 +21,7 @@ import { posStoreModeTagline } from "@/lib/verticals/pos-store-mode";
 import { toast } from "sonner";
 
 import { PosAssistantDialog } from "@/components/modules/ai/pos-assistant-dialog";
+import { GiftRecommendationsDialog } from "@/components/modules/pos/gift-recommendations-dialog";
 
 import { CartPanel } from "./cart-panel";
 import { CheckoutFooter } from "./checkout-footer";
@@ -233,6 +234,7 @@ export function PosTerminal() {
           <h2 className="text-sm font-semibold">Current sale</h2>
           <div className="flex items-center gap-2">
             <PosAssistantDialog />
+            <GiftRecommendationsDialog />
             <ShiftIndicator />
           </div>
         </header>

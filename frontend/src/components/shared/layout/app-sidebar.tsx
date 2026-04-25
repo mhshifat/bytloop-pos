@@ -50,6 +50,8 @@ const WORKSPACE_NAV: readonly NavItem[] = [
   { href: "/inventory", label: "Inventory", icon: Box },
   { href: "/orders", label: "Orders", icon: ScrollText },
   { href: "/customers", label: "Customers", icon: Users },
+  { href: "/customers/segments", label: "Segments", icon: Sparkles },
+  { href: "/customers/campaigns", label: "Campaigns", icon: Sparkles },
   { href: "/suppliers", label: "Suppliers", icon: Users },
   { href: "/purchase-orders", label: "Purchase orders", icon: ScrollText },
 ];
