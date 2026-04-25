@@ -20,6 +20,16 @@ from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
 from src.core.config import settings
 
+# libpq connection-URI options that get forwarded as ``connect()`` kwargs by
+# SQLAlchemy but are not valid for asyncpg (or are handled elsewhere).
+# See: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+_LIBPQ_QUERY_PARAMS_DROP: frozenset[str] = frozenset(
+    {
+        "channel_binding",
+        "gssencmode",
+    }
+)
+
 
 def _to_asyncpg_scheme(url: str) -> str:
     """Use asyncpg — bare ``postgresql://`` would make SQLAlchemy try psycopg2 (not a dep)."""
@@ -42,6 +52,8 @@ def get_asyncpg_connection_settings(url: str) -> tuple[str, dict[str, Any]]:
     for k, v in parse_qsl(parsed.query, keep_blank_values=True):
         if k == "sslmode":
             ssl_mode = v
+            continue
+        if k in _LIBPQ_QUERY_PARAMS_DROP:
             continue
         new_qsl.append((k, v))
     if ssl_mode is not None:
